@@ -1,5 +1,14 @@
 package org.carlspring.strongbox.providers.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.InputStream;
+import java.util.Optional;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.apache.commons.lang.time.DateUtils;
 import org.carlspring.strongbox.configuration.Configuration;
 import org.carlspring.strongbox.domain.ArtifactEntry;
 import org.carlspring.strongbox.providers.io.RepositoryPath;
@@ -7,15 +16,8 @@ import org.carlspring.strongbox.providers.io.RepositoryPathResolver;
 import org.carlspring.strongbox.providers.repository.proxied.LocalStorageProxyRepositoryExpiredArtifactsCleaner;
 import org.carlspring.strongbox.services.ArtifactEntryService;
 import org.carlspring.strongbox.services.ConfigurationManagementService;
-import org.carlspring.strongbox.storage.repository.remote.heartbeat.RemoteRepositoryAlivenessCacheManager;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.io.InputStream;
-import java.util.Optional;
-
-import org.apache.commons.lang.time.DateUtils;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.carlspring.strongbox.storage.repository.remote.heartbeat.RemoteRepositoryAlivenessService;
+import org.springframework.aop.TargetSource;
 
 /**
  * @author Przemyslaw Fusik
@@ -35,8 +37,8 @@ abstract class BaseLocalStorageProxyRepositoryExpiredArtifactsCleanerTest
     protected LocalStorageProxyRepositoryExpiredArtifactsCleaner localStorageProxyRepositoryExpiredArtifactsCleaner;
 
     @Inject
-    @Named("mockedRemoteRepositoryAlivenessCacheManager")
-    protected RemoteRepositoryAlivenessCacheManager remoteRepositoryAlivenessCacheManager;
+    @Named("remoteRepositoryAlivenessCacheManagerTargetSource") 
+    private TargetSource remoteRepositoryAlivenessCacheManagerTargetSource;
 
     @Inject
     protected RepositoryPathResolver repositoryPathResolver;
@@ -94,6 +96,10 @@ abstract class BaseLocalStorageProxyRepositoryExpiredArtifactsCleanerTest
     protected Configuration getConfiguration()
     {
         return configurationManagementService.getConfiguration();
+    }
+    
+    protected RemoteRepositoryAlivenessService getRemoteRepositoryAlivenessMock() throws Exception {
+        return (RemoteRepositoryAlivenessService) remoteRepositoryAlivenessCacheManagerTargetSource.getTarget(); 
     }
 
 }
